@@ -8,29 +8,33 @@ export default function AdminPanel() {
   const [activityLogs, setActivityLogs] = useState([]);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const loadAdminData = () => {
-    // Load Stats
-    const metrics = dbService.getAdminStats();
-    setStats(metrics);
+  const loadAdminData = async () => {
+    try {
+      // Load Stats
+      const metrics = await dbService.getAdminStats();
+      setStats(metrics);
 
-    // Load Pending Orgs
-    const pending = dbService.getPendingOrganizations();
-    setPendingOrgs(pending);
+      // Load Pending Orgs
+      const pending = await dbService.getPendingOrganizations();
+      setPendingOrgs(pending);
 
-    // Load Activity Logs
-    const logs = dbService.getActivityLogs();
-    setActivityLogs(logs);
+      // Load Activity Logs
+      const logs = await dbService.getActivityLogs();
+      setActivityLogs(logs);
+    } catch (err) {
+      console.error("Failed to load admin data", err);
+    }
   };
 
   useEffect(() => {
     loadAdminData();
   }, []);
 
-  const handleVerifyOrg = (orgId, approve) => {
+  const handleVerifyOrg = async (orgId, approve) => {
     try {
-      dbService.verifyOrganization(orgId, approve);
+      await dbService.verifyOrganization(orgId, approve);
       setSuccessMsg(`Organization account has been successfully ${approve ? 'verified' : 'rejected'}.`);
-      loadAdminData();
+      await loadAdminData();
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       alert(err.message);

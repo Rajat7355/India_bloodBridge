@@ -45,12 +45,12 @@ export default function Auth({
   }, [view]);
 
   // Handle Login Submit
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
 
     try {
-      const user = dbService.login(loginEmail, loginPassword);
+      const user = await dbService.login(loginEmail, loginPassword);
       setCurrentUser(user);
       
       // Route based on role
@@ -63,12 +63,12 @@ export default function Auth({
   };
 
   // Handle Donor Sign Up Submit
-  const handleDonorSubmit = (e) => {
+  const handleDonorSubmit = async (e) => {
     e.preventDefault();
     setDonorError('');
 
     try {
-      const user = dbService.registerDonor(
+      const user = await dbService.registerDonor(
         donorName,
         donorEmail,
         donorPassword,
@@ -85,7 +85,7 @@ export default function Auth({
   };
 
   // Handle Org Sign Up Submit
-  const handleOrgSubmit = (e) => {
+  const handleOrgSubmit = async (e) => {
     e.preventDefault();
     setOrgError('');
 
@@ -95,7 +95,7 @@ export default function Auth({
     }
 
     try {
-      const user = dbService.registerOrg(
+      const user = await dbService.registerOrg(
         orgName,
         orgEmail,
         orgPassword,

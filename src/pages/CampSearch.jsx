@@ -26,9 +26,13 @@ export default function CampSearch({ currentUser }) {
   const [errorMsg, setErrorMsg] = useState('');
 
   // Load all camps
-  const loadCamps = () => {
-    const allCamps = dbService.getCamps();
-    setCamps(allCamps);
+  const loadCamps = async () => {
+    try {
+      const allCamps = await dbService.getCamps();
+      setCamps(allCamps);
+    } catch (err) {
+      console.error("Failed to load camps", err);
+    }
   };
 
   useEffect(() => {
@@ -151,7 +155,7 @@ export default function CampSearch({ currentUser }) {
   };
 
   // Handle Camp Registration
-  const handleRegisterForCamp = (campId) => {
+  const handleRegisterForCamp = async (campId) => {
     setErrorMsg('');
     setSuccessMsg('');
 
@@ -166,11 +170,11 @@ export default function CampSearch({ currentUser }) {
     }
 
     try {
-      dbService.registerForCamp(currentUser.id, campId);
+      await dbService.registerForCamp(currentUser.id, campId);
       setSuccessMsg('Registration confirmed! Check-in details are saved to your profile.');
       
       // Reload states
-      loadCamps();
+      await loadCamps();
       setTimeout(() => setSuccessMsg(''), 5000);
     } catch (err) {
       setErrorMsg(err.message);

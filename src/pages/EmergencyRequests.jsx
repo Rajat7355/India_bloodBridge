@@ -25,15 +25,19 @@ export default function EmergencyRequests({ currentUser, onUpdateUser }) {
   const bloodTypesList = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   // Load emergency requests
-  const loadRequests = () => {
-    const list = dbService.getEmergencyRequests();
-    // Sort so priority is at top, then date
-    const sorted = [...list].sort((a, b) => {
-      if (a.redeemedPriority && !b.redeemedPriority) return -1;
-      if (!a.redeemedPriority && b.redeemedPriority) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-    setRequests(sorted);
+  const loadRequests = async () => {
+    try {
+      const list = await dbService.getEmergencyRequests();
+      // Sort so priority is at top, then date
+      const sorted = [...list].sort((a, b) => {
+        if (a.redeemedPriority && !b.redeemedPriority) return -1;
+        if (!a.redeemedPriority && b.redeemedPriority) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setRequests(sorted);
+    } catch (err) {
+      console.error("Failed to load emergency requests", err);
+    }
   };
 
   useEffect(() => {
@@ -48,14 +52,21 @@ export default function EmergencyRequests({ currentUser, onUpdateUser }) {
       return;
     }
 
-    // Get matching donors from database service (filters compatibility + city + eligibility, sorts by points)
-    const matches = dbService.getMatchingDonors(selectedRequest.bloodGroup, selectedRequest.city);
-    setMatchedDonors(matches);
+    const fetchMatches = async () => {
+      try {
+        // Get matching donors from database service (filters compatibility + city + eligibility, sorts by points)
+        const matches = await dbService.getMatchingDonors(selectedRequest.bloodGroup, selectedRequest.city);
+        setMatchedDonors(matches);
+      } catch (err) {
+        console.error("Failed to get matching donors", err);
+      }
+    };
+    fetchMatches();
     setBroadcastLog([]);
   }, [selectedRequest]);
 
   // Handle Post Request Submit
-  const handlePostRequest = (e) => {
+  const handlePostRequest = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
@@ -68,7 +79,7 @@ export default function EmergencyRequests({ currentUser, onUpdateUser }) {
     try {
       const cityCoords = dbService.getCityCoords(formCity);
       
-      dbService.postEmergencyRequest(
+      await dbService.postEmergencyRequest(
         currentUser.id,
         formBloodGroup,
         formLocation,
@@ -92,11 +103,11 @@ export default function EmergencyRequests({ currentUser, onUpdateUser }) {
 
       // Trigger user update if points changed
       if (onUpdateUser) {
-        onUpdateUser();
+        await onUpdateUser();
       }
 
       // Reload
-      loadRequests();
+      await loadRequests();
       setTimeout(() => setFormSuccess(''), 4000);
     } catch (err) {
       setFormError(err.message);

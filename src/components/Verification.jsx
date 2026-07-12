@@ -7,13 +7,18 @@ export default function Verification() {
   const [result, setResult] = useState(null);
   const [searched, setSearched] = useState(false);
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     const cleanId = certId.trim().toUpperCase();
     if (!cleanId) return;
 
-    const cert = dbService.getCertificate(cleanId);
-    setResult(cert || null);
+    try {
+      const cert = await dbService.getCertificate(cleanId);
+      setResult(cert || null);
+    } catch (err) {
+      console.error(err);
+      setResult(null);
+    }
     setSearched(true);
   };
 

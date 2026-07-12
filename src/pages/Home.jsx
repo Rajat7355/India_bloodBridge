@@ -13,8 +13,15 @@ export default function Home({ currentUser, setActivePage }) {
 
   // Load active camps
   useEffect(() => {
-    const allCamps = dbService.getCamps().filter(c => c.status === 'active');
-    setActiveCamps(allCamps);
+    const fetchCamps = async () => {
+      try {
+        const allCamps = await dbService.getCamps();
+        setActiveCamps(allCamps.filter(c => c.status === 'active'));
+      } catch (err) {
+        console.error("Failed to fetch active camps", err);
+      }
+    };
+    fetchCamps();
   }, []);
 
   // Slide rotation for live camp highlights
@@ -355,6 +362,77 @@ export default function Home({ currentUser, setActivePage }) {
         </section>
       )}
 
+      {/* 2.5 BLOOD DONATION STEP-BY-STEP WORKFLOW */}
+      <section style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <span className="badge badge-verified" style={{ marginBottom: '0.5rem' }}>Workflow Guide</span>
+          <h2 style={{ fontSize: '2rem', color: '#ffffff', marginBottom: '0.75rem' }}>Clinical Donation & Verification Flow</h2>
+          <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '0.95rem' }}>
+            Follow these 4 simple steps to complete your donation, earn reward points, and secure your official digital certificate.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }} className="stepper-grid">
+          
+          {/* Step 1 */}
+          <div className="glass-panel-maroon" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-maroon-primary)', minHeight: '200px' }}>
+            <div style={{ 
+              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
+              borderRadius: '50%', background: 'var(--color-maroon-primary)', color: '#ffffff', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
+            }}>1</div>
+            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>👤</span>
+            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>1. डोनर प्रोफाइल (Profile)</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+              Sign up as a Donor, enter your blood type and city, and generate your personal referral code.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="glass-panel-gold" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-gold-accent)', minHeight: '200px' }}>
+            <div style={{ 
+              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
+              borderRadius: '50%', background: 'var(--color-gold-accent)', color: 'var(--color-maroon-dark)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
+            }}>2</div>
+            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>🗺️</span>
+            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>2. कैंप रजिस्टर (Book)</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+              Search for local drives under "Find Camps", click Register, and reserve your donation slot.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="glass-panel-maroon" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-maroon-primary)', minHeight: '200px' }}>
+            <div style={{ 
+              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
+              borderRadius: '50%', background: 'var(--color-maroon-primary)', color: '#ffffff', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
+            }}>3</div>
+            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>💉</span>
+            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>3. रक्तदान व पुष्टि (Donate)</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+              Visit the camp. After donating, the NGO coordinator logs in and clicks **Confirm Donation** on their dashboard.
+            </p>
+          </div>
+
+          {/* Step 4 */}
+          <div className="glass-panel-gold" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-gold-accent)', minHeight: '200px' }}>
+            <div style={{ 
+              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
+              borderRadius: '50%', background: 'var(--color-gold-accent)', color: 'var(--color-maroon-dark)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
+            }}>4</div>
+            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>📜</span>
+            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>4. डिजिटल सर्टिफिकेट (Verify)</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+              Instantly claim 5 points and a digital verifiable certificate on your Donor Dashboard!
+            </p>
+          </div>
+
+        </div>
+      </section>
+
       {/* 3. HOW IT WORKS GRID */}
       <section style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
         <h2 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '2.5rem', color: '#ffffff' }}>
@@ -641,7 +719,7 @@ export default function Home({ currentUser, setActivePage }) {
           transform: translateY(-1.5px);
         }
         @media (max-width: 768px) {
-          .how-it-works-grid, .points-cards-grid, .about-grid, .founder-card-grid {
+          .how-it-works-grid, .points-cards-grid, .about-grid, .founder-card-grid, .stepper-grid {
             grid-template-columns: 1fr !important;
             gap: 1.5rem !important;
           }

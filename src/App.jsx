@@ -16,19 +16,22 @@ export default function App() {
 
   // Load session from storage if it exists (for sandbox switches)
   useEffect(() => {
-    const session = localStorage.getItem('india_bloodbridge_session');
-    if (session) {
-      try {
-        const user = JSON.parse(session);
-        // Refresh from DB to verify fresh records
-        const freshUser = dbService.getUser(user.id);
-        if (freshUser) {
-          setCurrentUser(freshUser);
+    const restoreSession = async () => {
+      const session = localStorage.getItem('india_bloodbridge_session');
+      if (session) {
+        try {
+          const user = JSON.parse(session);
+          // Refresh from DB to verify fresh records
+          const freshUser = await dbService.getUser(user.id);
+          if (freshUser) {
+            setCurrentUser(freshUser);
+          }
+        } catch (err) {
+          console.error("Session restore failed", err);
         }
-      } catch (err) {
-        console.error("Session restore failed", err);
       }
-    }
+    };
+    restoreSession();
   }, []);
 
   // Save session when user changes
@@ -41,11 +44,15 @@ export default function App() {
   }, [currentUser]);
 
   // Synchronize User profile stats (e.g. points redemptions)
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!currentUser) return;
-    const freshUser = dbService.getUser(currentUser.id);
-    if (freshUser) {
-      setCurrentUser(freshUser);
+    try {
+      const freshUser = await dbService.getUser(currentUser.id);
+      if (freshUser) {
+        setCurrentUser(freshUser);
+      }
+    } catch (err) {
+      console.error("User update failed", err);
     }
   };
 

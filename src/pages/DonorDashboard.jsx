@@ -3,26 +3,41 @@ import React, { useState, useEffect } from 'react';
 import { dbService } from '../services/db';
 import Certificate from '../components/Certificate';
 
-export default function DonorDashboard({ currentUser, onUpdateUser }) {
+export default function DonorDashboard({ currentUser, onUpdateUser, setActivePage }) {
   const [dbUser, setDbUser] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [referrals, setReferrals] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [copySuccess, setCopySuccess] = useState('');
 
   // Reload donor stats and related details
   useEffect(() => {
     if (!currentUser) return;
-    const user = dbService.getUser(currentUser.id);
-    setDbUser(user);
-    
-    // Get certificates
-    const certs = dbService.getCertificatesForDonor(currentUser.id);
-    setCertificates(certs);
+    const loadDonorData = async () => {
+      try {
+        const user = await dbService.getUser(currentUser.id);
+        setDbUser(user);
+        
+        // Get certificates
+        const certs = await dbService.getCertificatesForDonor(currentUser.id);
+        setCertificates(certs);
 
-    // Get referral chain
-    const chain = dbService.getReferralChain(currentUser.id);
-    setReferrals(chain);
+        // Get referral chain
+        const chain = await dbService.getReferralChain(currentUser.id);
+        setReferrals(chain);
+
+        // Get active registrations
+        const allCamps = await dbService.getCamps();
+        const userCamps = allCamps.filter(camp => 
+          camp.registeredDonors.some(d => d.donorId === currentUser.id)
+        );
+        setRegistrations(userCamps);
+      } catch (err) {
+        console.error("Failed to load donor dashboard data", err);
+      }
+    };
+    loadDonorData();
   }, [currentUser]);
 
   if (!dbUser) {
@@ -128,6 +143,101 @@ export default function DonorDashboard({ currentUser, onUpdateUser }) {
             Earn 2 bonus points when friends register with your code and complete their first donation.
           </span>
         </div>
+      </div>
+
+      {/* Active Camp Registrations / Upcoming Donations */}
+      <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', border: '1px solid rgba(212, 175, 55, 0.25)', boxShadow: 'var(--shadow-glow-gold)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.3rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🗓️ Your Upcoming Blood Donations (रक्तदान पंजीकरण)
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginTop: '0.15rem' }}>
+              Camps you are currently registered to attend. Visit the location on the specified date to donate.
+            </p>
+          </div>
+          <span className="badge badge-verified" style={{ background: 'rgba(212,175,55,0.1)', color: 'var(--color-gold-accent)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            {registrations.length} Slots Booked
+          </span>
+        </div>
+
+        {registrations.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+              {registrations.map(camp => {
+                const userReg = camp.registeredDonors.find(d => d.donorId === currentUser.id);
+                const isDonated = userReg?.status === 'donated';
+                
+                return (
+                  <div 
+                    key={camp.id} 
+                    className={isDonated ? "glass-panel-maroon" : "glass-panel"} 
+                    style={{ 
+                      padding: '1.25rem', 
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '1rem',
+                      borderLeft: isDonated ? '4px solid var(--color-success)' : '4px solid var(--color-gold-accent)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      <h3 style={{ fontSize: '1.15rem', color: '#ffffff' }}>{camp.title}</h3>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                        🏥 Host: <strong>{camp.orgName}</strong>
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                        📍 Location: {camp.locationName} ({camp.city})
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem', textAlign: 'right' }}>
+                      <span className="badge" style={{ 
+                        background: isDonated ? 'rgba(34, 197, 94, 0.1)' : 'rgba(212, 175, 55, 0.1)', 
+                        color: isDonated ? 'var(--color-success)' : 'var(--color-gold-accent)', 
+                        border: `1px solid ${isDonated ? 'var(--color-success)' : 'var(--color-gold-accent)'}`,
+                        fontSize: '0.7rem'
+                      }}>
+                        {isDonated ? '✅ Donated & Confirmed' : '⏳ Awaiting Camp Visit'}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: '#ffffff', fontWeight: 600 }}>
+                        📅 {camp.date} | ⏰ {camp.time}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Step-by-Step Info Box */}
+            <div style={{ 
+              background: 'rgba(212, 175, 55, 0.05)', 
+              border: '1px solid rgba(212, 175, 55, 0.25)', 
+              borderRadius: '8px', 
+              padding: '1.25rem', 
+              fontSize: '0.88rem', 
+              color: 'var(--color-text-secondary)',
+              lineHeight: 1.6
+            }}>
+              💡 <strong>हाउ टू डोनेट (Donation instructions):</strong><br />
+              1. Visit the camp location on the scheduled date and time.<br />
+              2. Give your name/contact at the registration desk.<br />
+              3. After donating, **the camp coordinator (NGO) will confirm your visit on their dashboard.**<br />
+              4. Once confirmed, you will instantly earn **+5 points** and your digital certificate will appear below!
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '2.5rem 1.5rem', color: 'var(--color-text-muted)', fontSize: '0.9rem', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+            🔔 You are not registered for any upcoming camps. 
+            <button 
+              onClick={() => setActivePage('camps')}
+              style={{ background: 'none', border: 'none', color: 'var(--color-gold-accent)', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', marginLeft: '0.35rem', padding: 0 }}
+            >
+              Browse & Register for a Camp
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Certificates and Referral Tree */}

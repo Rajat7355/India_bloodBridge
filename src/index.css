@@ -4,20 +4,20 @@
 
 :root {
   /* Color Palette derived from Maroon Drop & Interlocking Gold Rings Brand Identity */
-  --color-maroon-dark: #120a0b;       /* Charcoal background with deep maroon warmth */
-  --color-maroon-card: #1d1214;       /* Card background */
-  --color-maroon-primary: #6b1420;    /* Elegant maroon blood-drop shade */
-  --color-maroon-accent: #8b1e2c;     /* Lighter maroon / crimson highlight */
-  --color-maroon-glow: rgba(107, 20, 32, 0.4);
+  --color-maroon-dark: #0f0708;       /* Deeper charcoal background for sharper contrast */
+  --color-maroon-card: #1f1214;       /* Card background */
+  --color-maroon-primary: #8e1f2f;    /* Increased brightness of maroon blood-drop */
+  --color-maroon-accent: #b02e40;     /* Lighter maroon / crimson highlight */
+  --color-maroon-glow: rgba(142, 31, 47, 0.5);
   
   --color-gold-accent: #d4af37;       /* Brand golden metallic accent */
   --color-gold-glow: rgba(212, 175, 55, 0.3);
   --color-gold-hover: #f3cf59;
   
   --color-white: #ffffff;
-  --color-text-primary: #fceee9;      /* Warm off-white */
-  --color-text-secondary: #c7b4b3;    /* Muted silver-maroon */
-  --color-text-muted: #8c7877;
+  --color-text-primary: #ffffff;      /* Perfect high-contrast white */
+  --color-text-secondary: #e5d7d6;    /* Clear, highly readable silver-maroon */
+  --color-text-muted: #af9c9b;        /* Readable muted color */
   
   --color-success: #22c55e;
   --color-danger: #ef4444;
@@ -33,13 +33,13 @@
   --border-radius-md: 12px;
   --border-radius-lg: 20px;
   
-  --border-glass: 1px solid rgba(255, 255, 255, 0.05);
-  --border-maroon: 1px solid rgba(107, 20, 32, 0.3);
-  --border-gold-subtle: 1px solid rgba(212, 175, 55, 0.15);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.12); /* Sharper border */
+  --border-maroon: 1px solid rgba(194, 59, 52, 0.45); /* Sharper maroon border */
+  --border-gold-subtle: 1px solid rgba(212, 175, 55, 0.3); /* Sharper gold border */
   
-  --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  --shadow-glow-maroon: 0 0 20px 2px rgba(107, 20, 32, 0.25);
-  --shadow-glow-gold: 0 0 20px 2px rgba(212, 175, 55, 0.15);
+  --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --shadow-glow-maroon: 0 0 20px 2px rgba(142, 31, 47, 0.3);
+  --shadow-glow-gold: 0 0 20px 2px rgba(212, 175, 55, 0.25);
 }
 
 /* Reset and Base Styles */
@@ -247,8 +247,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-input, .form-select, .form-textarea {
-  background: rgba(18, 10, 11, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25); /* More visible border */
   border-radius: var(--border-radius-md);
   color: var(--color-text-primary);
   padding: 0.75rem 1rem;
@@ -260,9 +260,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none;
-  border-color: var(--color-maroon-primary);
-  box-shadow: 0 0 10px rgba(107, 20, 32, 0.5);
-  background: rgba(18, 10, 11, 0.8);
+  border-color: var(--color-gold-accent); /* Golden metallic accent border */
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 /* Animations */

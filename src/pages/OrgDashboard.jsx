@@ -28,14 +28,18 @@ export default function OrgDashboard({ currentUser }) {
   const bloodTypesList = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   // Load organization details and camps
-  const loadData = () => {
+  const loadData = async () => {
     if (!currentUser) return;
-    const user = dbService.getUser(currentUser.id);
-    setDbUser(user);
+    try {
+      const user = await dbService.getUser(currentUser.id);
+      setDbUser(user);
 
-    const allCamps = dbService.getCamps();
-    const orgCamps = allCamps.filter(c => c.orgId === currentUser.id);
-    setCamps(orgCamps);
+      const allCamps = await dbService.getCamps();
+      const orgCamps = allCamps.filter(c => c.orgId === currentUser.id);
+      setCamps(orgCamps);
+    } catch (err) {
+      console.error("Failed to load organization data", err);
+    }
   };
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export default function OrgDashboard({ currentUser }) {
   };
 
   // Create Camp Submit
-  const handleCreateCamp = (e) => {
+  const handleCreateCamp = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
@@ -80,7 +84,7 @@ export default function OrgDashboard({ currentUser }) {
     }
 
     try {
-      dbService.createCamp(
+      await dbService.createCamp(
         dbUser.id,
         formTitle,
         formDate,
@@ -111,11 +115,11 @@ export default function OrgDashboard({ currentUser }) {
   };
 
   // Close Camp
-  const handleCloseCamp = (campId) => {
+  const handleCloseCamp = async (campId) => {
     if (window.confirm('Are you sure you want to close this donation camp? No further donors will be able to register.')) {
       try {
-        dbService.closeCamp(campId);
-        loadData();
+        await dbService.closeCamp(campId);
+        await loadData();
       } catch (err) {
         alert(err.message);
       }
@@ -123,14 +127,14 @@ export default function OrgDashboard({ currentUser }) {
   };
 
   // Confirm Donor Donation
-  const handleConfirmDonation = (campId, donorId) => {
+  const handleConfirmDonation = async (campId, donorId) => {
     setErrorMessage('');
     setActionMessage('');
     
     try {
-      const result = dbService.confirmDonation(campId, donorId);
+      const result = await dbService.confirmDonation(campId, donorId);
       setActionMessage(`Donation successfully confirmed! Certificate Issued: ${result.certId}`);
-      loadData();
+      await loadData();
       setTimeout(() => setActionMessage(''), 6000);
     } catch (err) {
       setErrorMessage(err.message);
