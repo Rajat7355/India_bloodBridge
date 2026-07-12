@@ -1,6 +1,7 @@
 // src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import Logo from '../components/Logo';
+import FallingBloodDrops from '../components/FallingBloodDrops';
 import Verification from '../components/Verification';
 import { dbService } from '../services/db';
 import founderPhoto from '../assets/founder.png';
@@ -8,23 +9,23 @@ import founderPhoto from '../assets/founder.png';
 export default function Home({ currentUser, setActivePage }) {
   const [activeCamps, setActiveCamps] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [contrastMode, setContrastMode] = useState('light-cream');
   const [hoveredBtn, setHoveredBtn] = useState(null);
+  const [apiStatus, setApiStatus] = useState('checking');
 
-  // Load active camps
   useEffect(() => {
     const fetchCamps = async () => {
       try {
         const allCamps = await dbService.getCamps();
         setActiveCamps(allCamps.filter(c => c.status === 'active'));
+        setApiStatus('online');
       } catch (err) {
-        console.error("Failed to fetch active camps", err);
+        console.error('Failed to fetch active camps', err);
+        setApiStatus('offline');
       }
     };
     fetchCamps();
   }, []);
 
-  // Slide rotation for live camp highlights
   useEffect(() => {
     if (activeCamps.length <= 1) return;
     const timer = setInterval(() => {
@@ -33,293 +34,187 @@ export default function Home({ currentUser, setActivePage }) {
     return () => clearInterval(timer);
   }, [activeCamps]);
 
-  const handleNextSlide = () => {
-    setCurrentSlide(prev => (prev + 1) % activeCamps.length);
-  };
-
-  const handlePrevSlide = () => {
-    setCurrentSlide(prev => (prev - 1 + activeCamps.length) % activeCamps.length);
-  };
-
-  const cardStyles = contrastMode === 'light-cream' ? {
-    background: '#FAF6F0',
-    color: '#2C1B1D',
-    border: '1px solid #E5D5C5',
-    boxShadow: '0 10px 30px rgba(44, 27, 29, 0.1)',
-    pillBg: '#E8F0FE',
-    pillColor: '#1E3A8A',
-    pillBorder: '1px solid #D2E3FC',
-    titleColor: '#3A1417',
-    descColor: '#5C4A4B',
-    btnPrimaryBg: '#C23B34',
-    btnPrimaryColor: '#FFFFFF',
-    btnSecondaryBg: '#FFFFFF',
-    btnSecondaryBorder: '2px solid #1E3A8A',
-    btnSecondaryColor: '#1E3A8A'
-  } : {
-    background: 'linear-gradient(135deg, #2D1418 0%, #150A0B 100%)',
-    color: '#FCEEE9',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.5), var(--shadow-glow-maroon)',
-    pillBg: 'rgba(212, 175, 55, 0.1)',
-    pillColor: '#d4af37',
-    pillBorder: '1px solid rgba(212, 175, 55, 0.3)',
-    titleColor: '#FFFFFF',
-    descColor: '#C7B4B3',
-    btnPrimaryBg: '#d4af37',
-    btnPrimaryColor: '#120a0b',
-    btnSecondaryBg: 'rgba(255,255,255,0.05)',
-    btnSecondaryBorder: '1px solid rgba(255,255,255,0.2)',
-    btnSecondaryColor: '#ffffff'
+  const goDashboard = () => {
+    if (!currentUser) {
+      setActivePage('register-donor');
+      return;
+    }
+    if (currentUser.role === 'admin') setActivePage('admin');
+    else if (currentUser.role === 'org') setActivePage('org-dashboard');
+    else setActivePage('donor-dashboard');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', paddingBottom: '5rem' }}>
-      
-      {/* 1. HERO SECTION */}
-      <section style={{
-        background: 'linear-gradient(180deg, rgba(107, 20, 32, 0.15) 0%, rgba(18, 10, 11, 0) 100%)',
-        padding: '5rem 2rem 4rem 2rem',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '1.5rem'
-      }}>
-        <Logo size={140} showText={true} textVertical={true} />
-        
-        {/* Hindi Motivational Card with Background Contrast Switch */}
-        <div style={{
-          maxWidth: '850px',
-          width: '100%',
-          marginTop: '1.5rem',
-          padding: '2.5rem 2.5rem 3rem 2.5rem',
-          borderRadius: '16px',
-          background: cardStyles.background,
-          border: cardStyles.border,
-          boxShadow: cardStyles.boxShadow,
-          textAlign: 'left',
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, paddingBottom: '4rem' }}>
+
+      {/* HERO — falling blood drops + motivation card (screenshot layout) */}
+      <section
+        className="full-bleed"
+        style={{
           position: 'relative',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          minHeight: 'min(92vh, 900px)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1.5rem'
-        }}>
-          {/* Contrast Mode Toggle Switch */}
-          <div style={{
-            position: 'absolute',
-            top: '1.25rem',
-            right: '1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: contrastMode === 'light-cream' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.08)',
-            padding: '0.4rem 0.8rem',
-            borderRadius: '20px',
-            fontSize: '0.8rem',
-            fontWeight: '600',
-            color: cardStyles.descColor,
-            border: cardStyles.pillBorder
-          }}>
-            <span style={{ fontSize: '0.75rem' }}>Contrast background:</span>
-            <button 
-              type="button"
-              onClick={() => setContrastMode(prev => prev === 'light-cream' ? 'dark-glow' : 'light-cream')}
-              style={{
-                padding: '0.25rem 0.6rem',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: 'none',
-                background: contrastMode === 'light-cream' ? '#120a0b' : '#FAF6F0',
-                color: contrastMode === 'light-cream' ? '#ffffff' : '#120a0b',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-              }}
-            >
-              {contrastMode === 'light-cream' ? 'Dark Glow' : 'Light Cream'}
-            </button>
-          </div>
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: '3rem 1.5rem 4rem',
+          background:
+            'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(194,59,52,0.22) 0%, transparent 55%),' +
+            'linear-gradient(180deg, #12080a 0%, #0a0506 100%)'
+        }}
+      >
+        <FallingBloodDrops />
 
-          {/* Pill Badge */}
-          <div style={{ marginTop: '0.5rem' }}>
-            <span style={{
-              display: 'inline-block',
-              background: cardStyles.pillBg,
-              color: cardStyles.pillColor,
-              border: cardStyles.pillBorder,
-              padding: '0.4rem 1rem',
-              borderRadius: '20px',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              transition: 'all 0.3s ease'
-            }}>
+        <div
+          className="hero-animate"
+          style={{ position: 'relative', zIndex: 2, marginBottom: '1.75rem' }}
+        >
+          <Logo size={100} showText textVertical />
+        </div>
+
+        <div className="hero-motivation-card hero-animate-delay">
+          <div style={{ marginBottom: '1.25rem' }}>
+            <span className="hero-motivation-badge">
               🇮🇳 भारत का पहला ब्लड डोनेशन चेन नेटवर्क
             </span>
           </div>
 
-          {/* Motivational Headline */}
-          <h1 style={{
-            fontSize: '2.4rem',
-            color: cardStyles.titleColor,
-            fontWeight: '800',
-            lineHeight: '1.3',
-            fontFamily: 'var(--font-display)',
-            margin: 0,
-            transition: 'color 0.3s ease'
-          }}>
-            हर बूंद एक <span style={{ color: '#C23B34', fontWeight: '800', borderBottom: '2.5px solid #C23B34', paddingBottom: '2px' }}>चेन</span> बनाती है,<br />
+          <h1 className="hero-motivation-title" style={{ marginBottom: '1.25rem' }}>
+            हर बूंद एक <span className="highlight-chain">चेन</span> बनाती है,<br />
             हर चेन एक जान बचाती है
           </h1>
 
-          {/* Description Paragraph */}
-          <p style={{
-            fontSize: '1.05rem',
-            color: cardStyles.descColor,
-            lineHeight: '1.75',
-            margin: 0,
-            transition: 'color 0.3s ease',
-            maxWidth: '760px'
-          }}>
+          <p className="hero-motivation-desc" style={{ marginBottom: '1.75rem' }}>
             India BloodBridge रजिस्टर्ड संस्थाओं के ब्लड डोनेशन कैंप को आपके पास लाता है — लोकेशन से खोजें, डोनेट करें, तुरंत डिजिटल सर्टिफिकेट पाएं, और अपने रेफरल से एक बढ़ती हुई चेन बनाएं जो इमरजेंसी में काम आए।
           </p>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {!currentUser ? (
               <>
-                <button 
+                <button
+                  type="button"
+                  className="hero-btn-org"
                   onClick={() => setActivePage('register-org')}
                   onMouseEnter={() => setHoveredBtn('org')}
                   onMouseLeave={() => setHoveredBtn(null)}
-                  style={{ 
-                    background: cardStyles.btnPrimaryBg, 
-                    color: cardStyles.btnPrimaryColor,
-                    border: 'none',
-                    fontWeight: '700',
-                    padding: '0.85rem 1.75rem',
-                    fontSize: '0.95rem',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    boxShadow: contrastMode === 'light-cream' ? '0 4px 12px rgba(194, 59, 52, 0.25)' : '0 0 15px rgba(212, 175, 55, 0.2)',
-                    transform: hoveredBtn === 'org' ? 'translateY(-2px)' : 'translateY(0)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
+                  style={{ transform: hoveredBtn === 'org' ? 'translateY(-2px)' : 'none' }}
                 >
                   संस्था रजिस्ट्रेशन शुरू करें
                 </button>
-                <button 
+                <button
+                  type="button"
+                  className="hero-btn-donor"
                   onClick={() => setActivePage('register-donor')}
                   onMouseEnter={() => setHoveredBtn('donor')}
                   onMouseLeave={() => setHoveredBtn(null)}
-                  style={{ 
-                    background: hoveredBtn === 'donor' ? (contrastMode === 'light-cream' ? '#f0eae1' : 'rgba(255, 255, 255, 0.1)') : cardStyles.btnSecondaryBg, 
-                    border: cardStyles.btnSecondaryBorder, 
-                    color: cardStyles.btnSecondaryColor,
-                    fontWeight: '700',
-                    padding: '0.85rem 1.75rem',
-                    fontSize: '0.95rem',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transform: hoveredBtn === 'donor' ? 'translateY(-2px)' : 'translateY(0)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
+                  style={{ transform: hoveredBtn === 'donor' ? 'translateY(-2px)' : 'none' }}
                 >
                   डोनर बनें
                 </button>
               </>
             ) : (
-              <button 
-                onClick={() => {
-                  if (currentUser.role === 'admin') setActivePage('admin');
-                  else if (currentUser.role === 'org') setActivePage('org-dashboard');
-                  else setActivePage('donor-dashboard');
-                }}
-                onMouseEnter={() => setHoveredBtn('dash')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                style={{ 
-                  background: cardStyles.btnPrimaryBg, 
-                  color: cardStyles.btnPrimaryColor,
-                  border: 'none',
-                  fontWeight: '700',
-                  padding: '0.85rem 1.75rem',
-                  fontSize: '0.95rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transform: hoveredBtn === 'dash' ? 'translateY(-2px)' : 'translateY(0)',
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
+              <button
+                type="button"
+                className="hero-btn-org"
+                onClick={goDashboard}
               >
                 ⚙️ डैशबोर्ड पर जाएं (Go to Dashboard)
               </button>
             )}
-            <button 
+            <button
+              type="button"
+              className="hero-btn-donor"
               onClick={() => setActivePage('camps')}
               onMouseEnter={() => setHoveredBtn('search')}
               onMouseLeave={() => setHoveredBtn(null)}
-              style={{ 
-                background: 'transparent', 
-                border: hoveredBtn === 'search' ? `1.5px solid ${cardStyles.titleColor}` : cardStyles.btnSecondaryBorder,
-                color: hoveredBtn === 'search' ? cardStyles.titleColor : cardStyles.descColor,
-                fontWeight: '700',
-                padding: '0.85rem 1.75rem',
-                fontSize: '0.95rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transform: hoveredBtn === 'search' ? 'translateY(-2px)' : 'translateY(0)',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+              style={{
+                transform: hoveredBtn === 'search' ? 'translateY(-2px)' : 'none',
+                background: hoveredBtn === 'search' ? '#f0eae1' : '#FFFFFF'
               }}
             >
               🔍 कैंप खोजें (Search Camps)
             </button>
           </div>
         </div>
+
+        <div
+          className="hero-animate-delay-2"
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            marginTop: '1.25rem',
+            fontSize: '0.75rem',
+            letterSpacing: '0.04em',
+            color: apiStatus === 'online' ? 'var(--color-success)' : apiStatus === 'offline' ? 'var(--color-danger)' : 'var(--color-text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem'
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'currentColor',
+              boxShadow: apiStatus === 'online' ? '0 0 8px currentColor' : 'none'
+            }}
+          />
+          {apiStatus === 'online'
+            ? 'Live · MongoDB connected'
+            : apiStatus === 'offline'
+              ? 'API offline — start backend on port 5001'
+              : 'Connecting to BloodBridge API…'}
+        </div>
       </section>
 
-      {/* 2. LIVE CAMP HIGHLIGHTS CAROUSEL */}
+      {/* Live camps */}
       {activeCamps.length > 0 && (
-        <section style={{ maxWidth: '800px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
+        <section className="page-shell" style={{ paddingTop: '3.5rem', paddingBottom: '1rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <span className="badge badge-verified" style={{ marginBottom: '0.5rem' }}>Live Feed</span>
-            <h2 style={{ fontSize: '1.8rem', color: '#ffffff' }}>Active Donation Camps</h2>
+            <h2 style={{ fontSize: '1.85rem', color: '#ffffff', marginTop: '0.5rem' }}>Active Donation Camps</h2>
           </div>
 
-          <div className="glass-panel-maroon pulse-glow-card" style={{
-            position: 'relative',
-            padding: '2.5rem',
-            overflow: 'hidden',
-            minHeight: '220px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '1rem'
-          }}>
-            {/* Carousel Controls */}
+          <div
+            className="glass-panel-maroon pulse-glow-card"
+            style={{
+              position: 'relative',
+              padding: '2.25rem',
+              minHeight: 200,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '0.75rem',
+              maxWidth: 780,
+              margin: '0 auto'
+            }}
+          >
             {activeCamps.length > 1 && (
               <>
-                <button 
-                  onClick={handlePrevSlide}
+                <button
+                  type="button"
+                  aria-label="Previous camp"
+                  onClick={() => setCurrentSlide(p => (p - 1 + activeCamps.length) % activeCamps.length)}
                   style={{
-                    position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
-                    background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', 
-                    width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem'
                   }}
                 >
                   ‹
                 </button>
-                <button 
-                  onClick={handleNextSlide}
+                <button
+                  type="button"
+                  aria-label="Next camp"
+                  onClick={() => setCurrentSlide(p => (p + 1) % activeCamps.length)}
                   style={{
-                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-                    background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', 
-                    width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem'
                   }}
                 >
                   ›
@@ -327,32 +222,31 @@ export default function Home({ currentUser, setActivePage }) {
               </>
             )}
 
-            {/* Camp Slide content */}
             <div className="slide-up" key={currentSlide} style={{ width: '85%' }}>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
-                <span className="badge badge-verified">✓ Verified Org</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-gold-accent)' }}>• {activeCamps[currentSlide].city}</span>
+                <span className="badge badge-verified">Verified Org</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-gold-accent)' }}>· {activeCamps[currentSlide].city}</span>
               </div>
-              <h3 style={{ fontSize: '1.5rem', color: '#ffffff', marginBottom: '0.5rem' }}>{activeCamps[currentSlide].title}</h3>
+              <h3 style={{ fontSize: '1.4rem', color: '#ffffff', marginBottom: '0.4rem' }}>{activeCamps[currentSlide].title}</h3>
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
                 Host: <strong>{activeCamps[currentSlide].orgName}</strong>
               </p>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                📍 {activeCamps[currentSlide].locationName} | 📅 {activeCamps[currentSlide].date}
+                {activeCamps[currentSlide].locationName} · {activeCamps[currentSlide].date}
               </p>
             </div>
-            
-            {/* Dots */}
+
             {activeCamps.length > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
                 {activeCamps.map((_, idx) => (
-                  <div 
+                  <button
                     key={idx}
+                    type="button"
+                    aria-label={`Go to slide ${idx + 1}`}
                     onClick={() => setCurrentSlide(idx)}
                     style={{
-                      width: '8px', height: '8px', borderRadius: '50%',
-                      background: idx === currentSlide ? 'var(--color-gold-accent)' : 'rgba(255,255,255,0.2)',
-                      cursor: 'pointer'
+                      width: 8, height: 8, borderRadius: '50%', border: 'none', padding: 0, cursor: 'pointer',
+                      background: idx === currentSlide ? 'var(--color-gold-accent)' : 'rgba(255,255,255,0.2)'
                     }}
                   />
                 ))}
@@ -362,370 +256,229 @@ export default function Home({ currentUser, setActivePage }) {
         </section>
       )}
 
-      {/* 2.5 BLOOD DONATION STEP-BY-STEP WORKFLOW */}
-      <section style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-          <span className="badge badge-verified" style={{ marginBottom: '0.5rem' }}>Workflow Guide</span>
-          <h2 style={{ fontSize: '2rem', color: '#ffffff', marginBottom: '0.75rem' }}>Clinical Donation & Verification Flow</h2>
-          <p style={{ color: 'var(--color-text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '0.95rem' }}>
-            Follow these 4 simple steps to complete your donation, earn reward points, and secure your official digital certificate.
+      {/* Workflow */}
+      <section className="page-shell" style={{ paddingTop: '4rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.75rem' }}>
+          <span className="badge badge-verified">How it works</span>
+          <h2 style={{ fontSize: '2rem', color: '#ffffff', margin: '0.6rem 0 0.5rem' }}>Four steps to donate</h2>
+          <p style={{ color: 'var(--color-text-secondary)', maxWidth: 520, margin: '0 auto', fontSize: '0.95rem' }}>
+            Register, book a camp, donate, and receive a verifiable digital certificate with reward points.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }} className="stepper-grid">
-          
-          {/* Step 1 */}
-          <div className="glass-panel-maroon" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-maroon-primary)', minHeight: '200px' }}>
-            <div style={{ 
-              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
-              borderRadius: '50%', background: 'var(--color-maroon-primary)', color: '#ffffff', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
-            }}>1</div>
-            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>👤</span>
-            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>1. डोनर प्रोफाइल (Profile)</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-              Sign up as a Donor, enter your blood type and city, and generate your personal referral code.
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="glass-panel-gold" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-gold-accent)', minHeight: '200px' }}>
-            <div style={{ 
-              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
-              borderRadius: '50%', background: 'var(--color-gold-accent)', color: 'var(--color-maroon-dark)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
-            }}>2</div>
-            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>🗺️</span>
-            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>2. कैंप रजिस्टर (Book)</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-              Search for local drives under "Find Camps", click Register, and reserve your donation slot.
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="glass-panel-maroon" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-maroon-primary)', minHeight: '200px' }}>
-            <div style={{ 
-              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
-              borderRadius: '50%', background: 'var(--color-maroon-primary)', color: '#ffffff', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
-            }}>3</div>
-            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>💉</span>
-            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>3. रक्तदान व पुष्टि (Donate)</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-              Visit the camp. After donating, the NGO coordinator logs in and clicks **Confirm Donation** on their dashboard.
-            </p>
-          </div>
-
-          {/* Step 4 */}
-          <div className="glass-panel-gold" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'relative', borderTop: '3px solid var(--color-gold-accent)', minHeight: '200px' }}>
-            <div style={{ 
-              position: 'absolute', top: '-15px', left: '1.5rem', width: '30px', height: '30px', 
-              borderRadius: '50%', background: 'var(--color-gold-accent)', color: 'var(--color-maroon-dark)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
-            }}>4</div>
-            <span style={{ fontSize: '2rem', marginTop: '0.5rem' }}>📜</span>
-            <h3 style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: '700' }}>4. डिजिटल सर्टिफिकेट (Verify)</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-              Instantly claim 5 points and a digital verifiable certificate on your Donor Dashboard!
-            </p>
-          </div>
-
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem' }} className="stepper-grid">
+          {[
+            { n: 1, title: 'Donor profile', body: 'Sign up with blood type and city. Get your personal referral code.' },
+            { n: 2, title: 'Book a camp', body: 'Search verified drives nearby and reserve your donation slot.' },
+            { n: 3, title: 'Donate & confirm', body: 'Visit the camp. The org confirms donation on their dashboard.' },
+            { n: 4, title: 'Certificate', body: 'Earn 5 points and download your digital certificate instantly.' }
+          ].map((step) => (
+            <div
+              key={step.n}
+              className={step.n % 2 === 0 ? 'glass-panel-gold' : 'glass-panel-maroon'}
+              style={{
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.65rem',
+                position: 'relative',
+                borderTop: `3px solid ${step.n % 2 === 0 ? 'var(--color-gold-accent)' : 'var(--color-maroon-primary)'}`,
+                minHeight: 180
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute', top: -14, left: '1.25rem', width: 28, height: 28,
+                  borderRadius: '50%',
+                  background: step.n % 2 === 0 ? 'var(--color-gold-accent)' : 'var(--color-maroon-primary)',
+                  color: step.n % 2 === 0 ? 'var(--color-maroon-dark)' : '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem'
+                }}
+              >
+                {step.n}
+              </div>
+              <h3 style={{ fontSize: '1.1rem', color: '#ffffff', fontWeight: 700, marginTop: '0.85rem' }}>{step.title}</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{step.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 3. HOW IT WORKS GRID */}
-      <section style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
-        <h2 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '2.5rem', color: '#ffffff' }}>
+      {/* Audiences */}
+      <section className="page-shell" style={{ paddingTop: '4rem' }}>
+        <h2 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '2rem', color: '#ffffff' }}>
           Building the Bridge of Life
         </h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }} className="how-it-works-grid">
-          {/* Donors Box */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} className="how-it-works-grid">
           <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🩸 For Individual Donors
-            </h3>
-            <ul style={{ color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '1.25rem' }}>
-              <li><strong>Discover Nearby Camps:</strong> Search verified blood drives on an interactive map.</li>
-              <li><strong>Secure Certificates:</strong> Claim unique, verifiable certificates immediately after donation.</li>
-              <li><strong>Medical Gap Lockout:</strong> Enforces standard 3-month waits to protect donor health.</li>
-              <li><strong>Earn Reward Points:</strong> Get 5 points for donating. Save points to request premium emergency priority.</li>
+            <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.3rem' }}>For donors</h3>
+            <ul style={{ color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.65rem', paddingLeft: '1.15rem' }}>
+              <li>Discover verified camps on an interactive map</li>
+              <li>Claim digital certificates after each donation</li>
+              <li>3-month medical gap protects your health</li>
+              <li>Earn points — redeem for emergency priority</li>
             </ul>
-            <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={() => setActivePage('camps')}>
+            <button type="button" className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={() => setActivePage('camps')}>
               Find Camps Near Me
             </button>
           </div>
-
-          {/* Organizations Box */}
           <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🏥 For Blood Banks & NGOs
-            </h3>
-            <ul style={{ color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '1.25rem' }}>
-              <li><strong>Legal Registration:</strong> Upload registration documentation for Admin verification.</li>
-              <li><strong>Create Camps:</strong> Pin locations on the map, set timings, and list blood needs.</li>
-              <li><strong>Confirm Visits:</strong> Review registered donors at camp and mark donations to issue instant credentials.</li>
-              <li><strong>Verified Badge:</strong> Earn the "Verified by BloodBridge" status to build trust with donors.</li>
+            <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.3rem' }}>For blood banks & NGOs</h3>
+            <ul style={{ color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.65rem', paddingLeft: '1.15rem' }}>
+              <li>Upload registration docs for admin verification</li>
+              <li>Create camps with location, timing, and blood needs</li>
+              <li>Confirm donors and issue certificates in one click</li>
+              <li>Earn the Verified by BloodBridge badge</li>
             </ul>
-            <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={() => setActivePage('register-choice')}>
+            <button type="button" className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={() => setActivePage('register-choice')}>
               Register Organization
             </button>
           </div>
         </div>
       </section>
 
-      {/* 4. POINTS & REFERRAL SYSTEM EXPLAINER */}
-      <section style={{
-        background: 'rgba(107, 20, 32, 0.1)',
-        borderY: '1px solid rgba(107, 20, 32, 0.2)',
-        padding: '4rem 2rem'
-      }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      {/* Points */}
+      <section
+        className="full-bleed"
+        style={{
+          marginTop: '4rem',
+          padding: '3.5rem 1.5rem',
+          background: 'linear-gradient(180deg, rgba(142,31,47,0.12), transparent)'
+        }}
+      >
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: '2rem', color: '#ffffff', marginBottom: '0.5rem' }}>
-              The Referral Chain Rules
-            </h2>
-            <p style={{ color: 'var(--color-text-secondary)' }}>
-              Growing a reliable blood network through mutual reward.
-            </p>
+            <h2 style={{ fontSize: '2rem', color: '#ffffff', marginBottom: '0.4rem' }}>Referral chain rules</h2>
+            <p style={{ color: 'var(--color-text-secondary)' }}>Grow a reliable network through mutual reward.</p>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }} className="points-cards-grid">
-            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ fontSize: '2rem' }}>🎁</div>
-              <h4 style={{ color: 'var(--color-gold-accent)' }}>+5 Points / Donation</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-                Every confirmed unit donated adds 5 points. Wait 3 months before you can donate again.
-              </p>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ fontSize: '2rem' }}>🔗</div>
-              <h4 style={{ color: 'var(--color-gold-accent)' }}>+2 Points / Referral</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-                Bring friends using your referral code. Once they complete a donation, you earn 2 bonus points.
-              </p>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ fontSize: '2rem' }}>🚨</div>
-              <h4 style={{ color: 'var(--color-gold-accent)' }}>20 Points Priority Redemption</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-                Redeem 20 points during family emergency requests to prioritize your matching profile.
-              </p>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem' }} className="points-cards-grid">
+            {[
+              { t: '+5 / donation', d: 'Every confirmed unit adds 5 points. Wait 3 months before donating again.' },
+              { t: '+2 / referral', d: 'When someone you referred completes a donation, you earn 2 bonus points.' },
+              { t: '20 pts priority', d: 'Redeem 20 points on emergency requests for priority matching.' }
+            ].map((item) => (
+              <div key={item.t} className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                <h4 style={{ color: 'var(--color-gold-accent)', marginBottom: '0.5rem' }}>{item.t}</h4>
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{item.d}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 5. VERIFICATION SYSTEM SECTION */}
-      <section style={{ maxWidth: '750px', width: '100%', margin: '0 auto', padding: '0 1.5rem' }}>
+      <section className="page-shell" style={{ paddingTop: '3rem', maxWidth: 750 }}>
         <Verification />
       </section>
 
-      {/* 6. FOUNDER & ABOUT SECTION */}
-      <section style={{ maxWidth: '1000px', width: '100%', margin: '0 auto', padding: '0 1.5rem', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-        
-        {/* About Info Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.2fr', gap: '3rem', alignItems: 'center' }} className="about-grid">
+      {/* About + founder */}
+      <section className="page-shell" style={{ paddingTop: '3.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.2fr', gap: '2.5rem', alignItems: 'center' }} className="about-grid">
           <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              width: '160px', 
-              height: '160px', 
-              borderRadius: '50%', 
-              overflow: 'hidden', 
-              border: '4px solid var(--color-gold-accent)',
-              margin: '0 auto 1rem auto',
-              background: 'rgba(255,255,255,0.05)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '4rem',
-              boxShadow: 'var(--shadow-glow-gold)'
-            }}>
-              🇮🇳
+            <div
+              style={{
+                width: 140, height: 140, borderRadius: '50%', margin: '0 auto 1rem',
+                border: '3px solid var(--color-gold-accent)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(194,59,52,0.15)', fontSize: '3rem',
+                boxShadow: 'var(--shadow-glow-gold)'
+              }}
+            >
+              <span aria-hidden>🩸</span>
             </div>
-            <h4 style={{ fontSize: '1.25rem', color: '#ffffff', fontFamily: 'var(--font-display)' }}>Our Mission</h4>
+            <h4 style={{ fontSize: '1.2rem', color: '#ffffff', fontFamily: 'var(--font-display)' }}>Our Mission</h4>
             <span style={{ fontSize: '0.8rem', color: 'var(--color-gold-accent)', fontWeight: 600 }}>Cooperative Trust</span>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h2 style={{ fontSize: '2rem', color: '#ffffff' }}>About India BloodBridge</h2>
-            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-              India BloodBridge was conceived to address the severe fragmented nature of voluntary blood donations across India. Instead of relying on unverified broadcasts or rushing to hospital basements in emergencies, we build a bridge of absolute trust.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <h2 style={{ fontSize: '1.9rem', color: '#ffffff' }}>About India BloodBridge</h2>
+            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.65, fontSize: '0.95rem' }}>
+              India BloodBridge connects verified clinical organizations with individual donors — replacing panic broadcasts with structured, trustworthy coordination across cities.
             </p>
-            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-              By verifying clinical organizations, tracking precise medical gap intervals, and rewarding cooperative social chains, we make sure that blood donation is sustainable, secure, and rewarding.
+            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.65, fontSize: '0.95rem' }}>
+              Medical gap intervals, referral rewards, and instant certificates keep voluntary donation sustainable and secure.
             </p>
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ width: '100%', height: '1px', background: 'linear-gradient(to right, transparent, rgba(107, 20, 32, 0.4), transparent)' }} />
-
-        {/* Founder Card Section */}
-        <div className="glass-panel-maroon pulse-glow-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.5rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            👨‍💻 Founder's Note & Profile
+        <div className="glass-panel-maroon" style={{ padding: '2.25rem' }}>
+          <h3 style={{ color: 'var(--color-gold-accent)', fontSize: '1.4rem', fontFamily: 'var(--font-display)', marginBottom: '1.5rem' }}>
+            Founder
           </h3>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 3fr', gap: '2.5rem', alignItems: 'start' }} className="founder-card-grid">
-            
-            {/* Left: Founder Photo & Links */}
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '1.5rem', 
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: '160px',
-                height: '160px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: '4px solid var(--color-gold-accent)',
-                boxShadow: 'var(--shadow-glow-gold)',
-                background: 'rgba(0,0,0,0.2)'
-              }}>
-                <img 
-                  src={founderPhoto} 
-                  alt="Rajat Keshari" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
+          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 3fr', gap: '2rem', alignItems: 'start' }} className="founder-card-grid">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textAlign: 'center' }}>
+              <div
+                style={{
+                  width: 150, height: 150, borderRadius: '50%', overflow: 'hidden',
+                  border: '3px solid var(--color-gold-accent)', boxShadow: 'var(--shadow-glow-gold)'
+                }}
+              >
+                <img src={founderPhoto} alt="Rajat Keshari" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center' }}>
-                <h4 style={{ color: '#ffffff', fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>Rajat Keshari</h4>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+              <div>
+                <h4 style={{ color: '#ffffff', fontSize: '1.2rem', margin: 0 }}>Rajat Keshari</h4>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Creator & Full-Stack Developer
                 </span>
-                <a href="mailto:60rajatkeshri@gmail.com" style={{ fontSize: '0.8rem', color: 'var(--color-gold-accent)', textDecoration: 'none', margin: 0 }} className="social-link">
-                  ✉️ 60rajatkeshri@gmail.com
-                </a>
               </div>
-
-              {/* Links */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.25rem', width: '100%', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.85rem' }}>
-                  <a href="https://rajat-porfile.netlify.app" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    Portfolio
-                  </a>
-                  <span style={{ color: 'var(--color-text-muted)' }}>•</span>
-                  <a href="https://www.linkedin.com/in/rajat-kumar-keshari-201524218/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}>
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                    </svg>
-                    LinkedIn
-                  </a>
-                  <span style={{ color: 'var(--color-text-muted)' }}>•</span>
-                  <a href="https://github.com/samm-developer" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}>
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    GitHub
-                  </a>
-                </div>
-                <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.85rem' }}>
-                  <a href="https://www.facebook.com/share/1DBFwr417f/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}>
-                      <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-                    </svg>
-                    Facebook
-                  </a>
-                  <span style={{ color: 'var(--color-text-muted)' }}>•</span>
-                  <a href="https://www.instagram.com/kesharirajatkumar?igsh=MTRjaGFrbTdiZjlsdw==" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}>
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204 0.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                    Instagram
-                  </a>
-                  <span style={{ color: 'var(--color-text-muted)' }}>•</span>
-                  <a href="https://wa.me/917355904515" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold-accent)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', fontWeight: 500 }} className="social-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}>
-                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.637-1.03-5.115-2.903-6.989-1.873-1.873-4.36-2.903-6.996-2.904-5.44 0-9.866 4.42-9.869 9.865-.001 1.8.486 3.553 1.412 5.158l-.993 3.626 3.71-.973zm11.314-7.447c-.29-.145-1.719-.848-1.984-.944-.266-.097-.46-.145-.653.145-.193.29-.747.944-.916 1.137-.168.193-.337.218-.627.073-.29-.145-1.226-.452-2.335-1.442-.864-.771-1.447-1.724-1.616-2.014-.169-.29-.018-.447.127-.591.131-.13.29-.338.435-.507.145-.169.193-.29.29-.483.097-.193.048-.363-.024-.507-.072-.145-.653-1.573-.895-2.152-.236-.569-.497-.49-.653-.498-.157-.008-.337-.01-.518-.01-.18 0-.476.068-.724.338-.249.271-.95.928-.95 2.264 0 1.337.973 2.628 1.108 2.81.135.18 1.916 2.926 4.641 4.103.648.28 1.153.448 1.547.573.651.207 1.243.178 1.711.108.522-.078 1.719-.702 1.961-1.381.242-.678.242-1.26.169-1.381-.073-.12-.27-.193-.56-.338z"/>
-                    </svg>
-                    WhatsApp
-                  </a>
-                </div>
+              <a href="mailto:60rajatkeshri@gmail.com" style={{ fontSize: '0.8rem', color: 'var(--color-gold-accent)', textDecoration: 'none' }} className="social-link">
+                60rajatkeshri@gmail.com
+              </a>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', fontSize: '0.85rem' }}>
+                <a href="https://rajat-porfile.netlify.app" target="_blank" rel="noopener noreferrer" className="social-link" style={{ color: 'var(--color-gold-accent)', textDecoration: 'none' }}>Portfolio</a>
+                <a href="https://www.linkedin.com/in/rajat-kumar-keshari-201524218/" target="_blank" rel="noopener noreferrer" className="social-link" style={{ color: 'var(--color-gold-accent)', textDecoration: 'none' }}>LinkedIn</a>
+                <a href="https://github.com/samm-developer" target="_blank" rel="noopener noreferrer" className="social-link" style={{ color: 'var(--color-gold-accent)', textDecoration: 'none' }}>GitHub</a>
               </div>
             </div>
-
-            {/* Right: Details & Narrative */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-              
-              {/* Chips / Badges */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: 'var(--color-gold-accent)', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
-                  🎓 M.Tech (CS) — NIT Jalandhar (Present)
-                </span>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: 'var(--color-gold-accent)', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
-                  🎓 B.Tech (CS) — B.I.E.T Jhansi
-                </span>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(107,20,32,0.2)', border: '1px solid rgba(107,20,32,0.3)', color: '#ffd700', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
-                  💼 25+ Projects Hosted for Multiple Organizations
-                </span>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(107,20,32,0.2)', border: '1px solid rgba(107,20,32,0.3)', color: '#ffd700', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
-                  🚀 Experienced Freelance Full-Stack Engineer
-                </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {['M.Tech (CS) — NIT Jalandhar', 'B.Tech (CS) — B.I.E.T Jhansi', '25+ hosted projects'].map((chip) => (
+                  <span
+                    key={chip}
+                    style={{
+                      fontSize: '0.72rem',
+                      background: 'rgba(212,175,55,0.1)',
+                      border: '1px solid rgba(212,175,55,0.25)',
+                      color: 'var(--color-gold-accent)',
+                      padding: '0.3rem 0.7rem',
+                      borderRadius: 6,
+                      fontWeight: 600
+                    }}
+                  >
+                    {chip}
+                  </span>
+                ))}
               </div>
-
-              {/* Divider */}
-              <div style={{ width: '100%', height: '1px', background: 'linear-gradient(to right, rgba(255,255,255,0.06), transparent)' }} />
-
-              {/* Narrative Bio */}
-              <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.92rem', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '720px' }}>
-                <p style={{ margin: 0 }}>
-                  As an experienced freelance full-stack software engineer, I have successfully designed, built, and hosted over <strong>25+ web applications and custom software systems</strong> for multiple organizations. My expertise spans creating database-driven platforms, designing robust backend server architectures, and crafting responsive user interfaces that solve real-world problems.
-                </p>
-                
-                <p style={{ margin: 0 }}>
-                  Deploying and scaling production systems for clients has taught me the absolute importance of transactional reliability and data validation. I built <strong>India BloodBridge</strong> using these same professional industry standards to streamline peer-to-peer blood donation coordination, implementing rigid gap-validation logic for donation eligibility and optimizing emergency match sorting algorithms.
-                </p>
-              </div>
-
-              {/* Divider */}
-              <div style={{ width: '100%', height: '1px', background: 'linear-gradient(to right, rgba(255,255,255,0.06), transparent)' }} />
-
-              {/* Pull-quote */}
-              <div style={{ 
-                fontStyle: 'italic', 
-                borderLeft: '4px solid var(--color-gold-accent)', 
-                padding: '0.75rem 1.25rem', 
-                color: 'var(--color-text-primary)',
-                background: 'rgba(212, 175, 55, 0.02)',
-                borderRadius: '0 8px 8px 0',
-                maxWidth: '720px',
-                lineHeight: 1.6,
-                margin: 0
-              }}>
-                "By connecting verified medical organizations with individual donors through robust transactional code, we can replace chaotic panic broadcasts with a network of cooperative, structured hope."
-              </div>
-
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.92rem', lineHeight: 1.7, margin: 0 }}>
+                India BloodBridge is built with production standards — transactional reliability, eligibility validation, and emergency match sorting — so donation coordination stays dependable when it matters most.
+              </p>
+              <blockquote
+                style={{
+                  margin: 0,
+                  fontStyle: 'italic',
+                  borderLeft: '4px solid var(--color-gold-accent)',
+                  padding: '0.75rem 1.15rem',
+                  color: 'var(--color-text-primary)',
+                  background: 'rgba(212, 175, 55, 0.04)',
+                  borderRadius: '0 8px 8px 0',
+                  lineHeight: 1.6
+                }}
+              >
+                Connecting verified organizations with donors through structured code replaces chaotic panic with cooperative hope.
+              </blockquote>
             </div>
-
           </div>
         </div>
-
       </section>
 
       <style>{`
-        .social-link {
-          transition: all 0.2s ease-in-out;
-        }
-        .social-link:hover {
-          color: var(--color-gold-hover) !important;
-          text-decoration: underline !important;
-          transform: translateY(-1.5px);
-        }
+        .social-link { transition: color 0.2s ease, transform 0.2s ease; }
+        .social-link:hover { color: var(--color-gold-hover) !important; transform: translateY(-1px); }
         @media (max-width: 768px) {
           .how-it-works-grid, .points-cards-grid, .about-grid, .founder-card-grid, .stepper-grid {
             grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
+            gap: 1.25rem !important;
           }
         }
       `}</style>
-
     </div>
   );
 }

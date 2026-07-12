@@ -67,48 +67,60 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem' }}>
+      <main style={{ flex: 1, width: '100%' }}>
         {activePage === 'home' && (
           <Home currentUser={currentUser} setActivePage={setActivePage} />
         )}
         
         {activePage === 'camps' && (
-          <CampSearch currentUser={currentUser} />
+          <div className="page-shell">
+            <CampSearch currentUser={currentUser} />
+          </div>
         )}
         
         {activePage === 'emergencies' && (
-          <EmergencyRequests 
-            currentUser={currentUser} 
-            onUpdateUser={handleUpdateUser} 
-          />
+          <div className="page-shell">
+            <EmergencyRequests 
+              currentUser={currentUser} 
+              onUpdateUser={handleUpdateUser} 
+            />
+          </div>
         )}
         
         {activePage === 'donor-dashboard' && (
-          <DonorDashboard 
-            currentUser={currentUser} 
-            onUpdateUser={handleUpdateUser} 
-            setActivePage={setActivePage}
-          />
+          <div className="page-shell">
+            <DonorDashboard 
+              currentUser={currentUser} 
+              onUpdateUser={handleUpdateUser} 
+              setActivePage={setActivePage}
+            />
+          </div>
         )}
         
         {activePage === 'org-dashboard' && (
-          <OrgDashboard currentUser={currentUser} />
+          <div className="page-shell">
+            <OrgDashboard currentUser={currentUser} />
+          </div>
         )}
         
         {activePage === 'admin' && (
-          <AdminPanel />
+          <div className="page-shell">
+            <AdminPanel />
+          </div>
         )}
 
         {(activePage === 'login' || 
           activePage === 'register-choice' || 
           activePage === 'register-donor' || 
           activePage === 'register-org') && (
-          <Auth 
-            view={activePage} 
-            setView={setActivePage} 
-            setCurrentUser={setCurrentUser} 
-            setActivePage={setActivePage} 
-          />
+          <div className="page-shell">
+            <Auth 
+              view={activePage} 
+              setView={setActivePage} 
+              setCurrentUser={setCurrentUser} 
+              setActivePage={setActivePage} 
+            />
+          </div>
         )}
       </main>
 
@@ -126,10 +138,10 @@ export default function App() {
         gap: '1rem'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-          <strong style={{ fontFamily: 'Georgia, serif', color: '#ffffff', fontSize: '1.25rem' }}>
+          <strong style={{ fontFamily: 'var(--font-display)', color: '#ffffff', fontSize: '1.35rem' }}>
             India <span style={{ color: 'var(--color-gold-accent)' }}>BloodBridge</span>
           </strong>
-          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', letterSpacing: '0.05em' }}>
             एक चेन, अनगिनत जिंदगियां
           </span>
         </div>
