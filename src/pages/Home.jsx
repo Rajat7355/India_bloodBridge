@@ -9,17 +9,14 @@ export default function Home({ currentUser, setActivePage }) {
   const [activeCamps, setActiveCamps] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredBtn, setHoveredBtn] = useState(null);
-  const [apiStatus, setApiStatus] = useState('checking');
 
   useEffect(() => {
     const fetchCamps = async () => {
       try {
         const allCamps = await dbService.getCamps();
         setActiveCamps(allCamps.filter(c => c.status === 'active'));
-        setApiStatus('online');
       } catch (err) {
         console.error('Failed to fetch active camps', err);
-        setApiStatus('offline');
       }
     };
     fetchCamps();
@@ -129,36 +126,6 @@ export default function Home({ currentUser, setActivePage }) {
               🔍 कैंप खोजें (Search Camps)
             </button>
           </div>
-        </div>
-
-        <div
-          className="hero-animate-delay-2"
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            marginTop: '1.25rem',
-            fontSize: '0.75rem',
-            letterSpacing: '0.04em',
-            color: apiStatus === 'online' ? 'var(--color-success)' : apiStatus === 'offline' ? 'var(--color-danger)' : 'var(--color-text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem'
-          }}
-        >
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: 'currentColor',
-              boxShadow: apiStatus === 'online' ? '0 0 8px currentColor' : 'none'
-            }}
-          />
-          {apiStatus === 'online'
-            ? 'Live · MongoDB connected'
-            : apiStatus === 'offline'
-              ? 'API offline — check backend connection'
-              : 'Connecting to BloodBridge API…'}
         </div>
       </section>
 
