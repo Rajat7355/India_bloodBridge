@@ -1,7 +1,7 @@
 // src/components/Logo.jsx
 import React from 'react';
 
-export default function Logo({ size = 120, showText = true, textVertical = false, light = true }) {
+export default function Logo({ size = 120, showText = true, textVertical = false, light = true, dropFromTop = false }) {
   const brandMaroon = '#c23b34';
   const brandGold = '#d4af37';
   const titleColor = light ? '#ffffff' : '#8c1d24';
@@ -20,6 +20,7 @@ export default function Logo({ size = 120, showText = true, textVertical = false
       }}
     >
       <svg
+        className={dropFromTop ? 'hero-main-drop' : undefined}
         width={size}
         height={size * 1.15}
         viewBox="0 0 100 115"
@@ -46,7 +47,10 @@ export default function Logo({ size = 120, showText = true, textVertical = false
       </svg>
 
       {showText && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: textVertical ? 'center' : 'flex-start' }}>
+        <div
+          className={dropFromTop ? 'hero-main-drop-text' : undefined}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: textVertical ? 'center' : 'flex-start' }}
+        >
           <span
             style={{
               fontFamily: "'Fraunces', Georgia, serif",

@@ -1,7 +1,6 @@
 // src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import Logo from '../components/Logo';
-import FallingBloodDrops from '../components/FallingBloodDrops';
 import Verification from '../components/Verification';
 import { dbService } from '../services/db';
 import founderPhoto from '../assets/founder.png';
@@ -64,13 +63,8 @@ export default function Home({ currentUser, setActivePage }) {
             'linear-gradient(180deg, #12080a 0%, #0a0506 100%)'
         }}
       >
-        <FallingBloodDrops />
-
-        <div
-          className="hero-animate"
-          style={{ position: 'relative', zIndex: 2, marginBottom: '1.75rem' }}
-        >
-          <Logo size={100} showText textVertical />
+        <div style={{ position: 'relative', zIndex: 2, marginBottom: '1.75rem' }}>
+          <Logo size={100} showText textVertical dropFromTop />
         </div>
 
         <div className="hero-motivation-card hero-animate-delay">
@@ -129,8 +123,7 @@ export default function Home({ currentUser, setActivePage }) {
               onMouseEnter={() => setHoveredBtn('search')}
               onMouseLeave={() => setHoveredBtn(null)}
               style={{
-                transform: hoveredBtn === 'search' ? 'translateY(-2px)' : 'none',
-                background: hoveredBtn === 'search' ? '#f0eae1' : '#FFFFFF'
+                transform: hoveredBtn === 'search' ? 'translateY(-2px)' : 'none'
               }}
             >
               🔍 कैंप खोजें (Search Camps)

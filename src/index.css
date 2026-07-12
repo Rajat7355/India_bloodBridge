@@ -308,6 +308,34 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes mainHeroDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(-45vh - 80px)) scale(0.88);
+  }
+  12% {
+    opacity: 1;
+  }
+  72% {
+    transform: translateY(6px) scale(1.02);
+  }
+  88% {
+    transform: translateY(-3px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-main-drop {
+  animation: mainHeroDrop 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-main-drop-text {
+  animation: heroFade 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
+}
+
 @keyframes softPulse {
   0%, 100% { opacity: 0.45; transform: scale(1); }
   50% { opacity: 0.75; transform: scale(1.06); }
@@ -408,13 +436,18 @@ h1, h2, h3, h4, h5, h6 {
     animation: none !important;
     display: none;
   }
+
+  .hero-main-drop,
+  .hero-main-drop-text {
+    animation: none !important;
+  }
 }
 
 .hero-motivation-card {
-  background: #FAF6F0;
-  color: #2C1B1D;
-  border: 1px solid #E5D5C5;
-  box-shadow: 0 16px 48px rgba(44, 27, 29, 0.14);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  box-shadow: none;
   border-radius: 16px;
   padding: 2.5rem 2.5rem 3rem;
   text-align: left;
@@ -426,9 +459,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .hero-motivation-badge {
   display: inline-block;
-  background: #E8F0FE;
-  color: #1E3A8A;
-  border: 1px solid #D2E3FC;
+  background: rgba(194, 59, 52, 0.18);
+  color: var(--color-gold-accent);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   padding: 0.4rem 1rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -442,19 +475,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size: clamp(1.75rem, 4vw, 2.4rem);
   font-weight: 800;
   line-height: 1.3;
-  color: #3A1417;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
 .hero-motivation-title .highlight-chain {
-  color: #C23B34;
-  border-bottom: 2.5px solid #C23B34;
+  color: var(--color-maroon-accent);
+  border-bottom: 2.5px solid var(--color-maroon-accent);
   padding-bottom: 2px;
 }
 
 .hero-motivation-desc {
   font-size: clamp(0.95rem, 2vw, 1.05rem);
-  color: #5C4A4B;
+  color: var(--color-text-secondary);
   line-height: 1.75;
   margin: 0;
   max-width: 760px;
@@ -479,20 +512,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero-btn-donor {
-  background: #FFFFFF;
-  border: 2px solid #1E3A8A;
-  color: #1E3A8A;
+  background: transparent;
+  border: 2px solid var(--color-gold-accent);
+  color: var(--color-gold-accent);
   font-weight: 700;
   padding: 0.85rem 1.75rem;
   font-size: 0.95rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.25s ease, background 0.25s ease;
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .hero-btn-donor:hover {
   transform: translateY(-2px);
-  background: #f0eae1;
+  background: rgba(212, 175, 55, 0.12);
 }
 
 .hero-animate {
