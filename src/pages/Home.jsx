@@ -157,7 +157,7 @@ export default function Home({ currentUser, setActivePage }) {
           {apiStatus === 'online'
             ? 'Live · MongoDB connected'
             : apiStatus === 'offline'
-              ? 'API offline — start backend on port 5001'
+              ? 'API offline — check backend connection'
               : 'Connecting to BloodBridge API…'}
         </div>
       </section>
